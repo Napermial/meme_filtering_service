@@ -1,0 +1,31 @@
+categories = [
+    "Affection",
+    "Anger",
+    "Annoyance",
+    "Anticipation",
+    "Aversion",
+    "Confidence",
+    "Disapproval",
+    "Disconnection",
+    "Disquietment",
+    "Doubt/Confusion",
+    "Embarrassment",
+    "Engagement",
+    "Esteem",
+    "Excitement",
+    "Fatigue",
+    "Fear",
+    "Happiness",
+    "Pain",
+    "Peace",
+    "Pleasure",
+    "Sadness",
+    "Sensitivity",
+    "Suffering",
+    "Surprise",
+    "Sympathy",
+    "Yearning",
+]
+
+if __name__ == "__main__":
+    pass

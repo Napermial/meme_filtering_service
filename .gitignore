@@ -2,3 +2,5 @@ venv/
 *.jpg
 *.png
 *.webm
+processing/models
+processing/__pycache__
