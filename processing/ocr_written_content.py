@@ -59,9 +59,9 @@ def ocr_stroke_width_transformed_image(image, config) -> str:
 
 
 def merge_solutions(texts: list):
-    nltk.download("stopwords")
-    nltk.download("wordnet")
-    nltk.download("omw-1.4")
+    nltk.download("stopwords", quiet=True)
+    nltk.download("wordnet", quiet=True)
+    nltk.download("omw-1.4", quiet=True)
     possibles = []
     for text in texts:
         textBlb = TextBlob(text.replace("\n", " "))

@@ -1,12 +1,41 @@
 import torch.nn as nn
-from torch import load, cat
+from torch import load, cat, device
 from os.path import isfile
 from os import getcwd
 import gdown
 from os.path import join
 from PIL import Image
 from torchvision import transforms
-from emotion_categories import categories
+import numpy as np
+
+categories = [
+    "Affection",
+    "Anger",
+    "Annoyance",
+    "Anticipation",
+    "Aversion",
+    "Confidence",
+    "Disapproval",
+    "Disconnection",
+    "Disquietment",
+    "Doubt/Confusion",
+    "Embarrassment",
+    "Engagement",
+    "Esteem",
+    "Excitement",
+    "Fatigue",
+    "Fear",
+    "Happiness",
+    "Pain",
+    "Peace",
+    "Pleasure",
+    "Sadness",
+    "Sensitivity",
+    "Suffering",
+    "Surprise",
+    "Sympathy",
+    "Yearning",
+]
 
 
 class Emotic(nn.Module):
@@ -63,10 +92,13 @@ def predict_emotion(path: str):
     transform = transforms.ToTensor()
     input = transform(Image.open(path))
     input = input.unsqueeze(0)
+    emotic_model = Emotic(1, 1)
 
     model_context = load(join(getcwd(), "processing", files[0]))
     model_body = load(join(getcwd(), "processing", files[1]))
-    emotic_model = load(join(getcwd(), "processing", files[2]))
+    emotic_model = load(
+        join(getcwd(), "processing", files[2]), map_location=device("cpu")
+    )
 
     model_context.eval()
     model_body.eval()
