@@ -1,9 +1,10 @@
 import os
 from PIL import Image, UnidentifiedImageError
-import imagehash
+import imagehash, click
 
 
 def get_unique_phash_for_images_in_directory(path) -> dict[str, dict[str, str]]:
+    click.echo("deduplicating / hashing images")
     picture_metadata = {}
 
     for root, _, files in os.walk(path):

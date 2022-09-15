@@ -1,3 +1,4 @@
+from distutils.log import debug
 import nltk
 from nltk.corpus import stopwords
 from nltk.corpus import wordnet
@@ -5,11 +6,11 @@ import pytesseract
 import numpy as np
 import cv2, pillowfight
 from PIL import Image
-from textblob import TextBlob
-import wordninja
+import wordninja, click
 
 
 def ocr_vanilla_image(image, config) -> str:
+    click.echo("running vanilla ocr")
     return pytesseract.image_to_string(image, config=config)
 
 
@@ -26,6 +27,7 @@ def _create_grayscale_image(image):
 
 
 def ocr_inverted_colour_image(image, config) -> str:
+    click.echo("running inverted colour ocr")
     grayscale_image = _create_grayscale_image(image)
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, [3, 3])
     opening = cv2.morphologyEx(grayscale_image, cv2.MORPH_OPEN, kernel)
@@ -36,6 +38,7 @@ def ocr_inverted_colour_image(image, config) -> str:
 
 
 def ocr_grayscale_image_with_otsu(image, config) -> str:
+    click.echo("running grayscale with otsu ocr")
     grayscale_image = _create_grayscale_image(image)
     _, binary_image = cv2.threshold(
         grayscale_image, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU
@@ -44,6 +47,7 @@ def ocr_grayscale_image_with_otsu(image, config) -> str:
 
 
 def ocr_adaptive_gaussian_treshold_image(image, config) -> str:
+    click.echo("running Gaussian adaptive treshold ocr")
     grayscale_image = _create_grayscale_image(image)
     gaussian_image = cv2.adaptiveThreshold(
         grayscale_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 17, -15
@@ -52,6 +56,7 @@ def ocr_adaptive_gaussian_treshold_image(image, config) -> str:
 
 
 def ocr_stroke_width_transformed_image(image, config) -> str:
+    click.echo("running stroke width transformed ocr")
     stroke_width_transformed = pillowfight.swt(
         Image.fromarray(image), output_type=pillowfight.SWT_OUTPUT_GRAYSCALE_TEXT
     )
@@ -62,30 +67,36 @@ def merge_solutions(texts: list):
     nltk.download("stopwords", quiet=True)
     nltk.download("wordnet", quiet=True)
     nltk.download("omw-1.4", quiet=True)
+    click.echo("running merging ocr texts")
     possibles = []
     for text in texts:
-        textBlb = TextBlob(text.replace("\n", " "))
-        possibles.append(textBlb.correct())
-
+        possibles.append(text.replace("\n", " "))
     valid_words = set()
 
+    english_stopwords = set(stopwords.words("english"))
     for text in possibles:
         for word in text.split(" "):
             word = word.lower()
-            if len(word) > 2 and word not in set(stopwords.words("english")):
-                if len(word) > 10:
-                    valid_words.update(
-                        [word for word in wordninja.split(word) if len(word) > 2]
-                    )
-                    continue
+            if len(word) > 10:
+                valid_words.update(
+                    [
+                        word
+                        for word in wordninja.split(word)
+                        if len(word) > 2 and word.lower() not in english_stopwords
+                    ]
+                )
+                continue
+            if len(word) > 2 and word not in english_stopwords:
                 valid_words.add(word)
-
+    click.echo("wordninja finished")
     synonyms = set()
     for word in valid_words:
         for syn in wordnet.synsets(word):
             for l in syn.lemmas()[:1]:
-                synonyms.add(l.name().lower())
+                if len(l.name()) > 2 and l.name().lower() not in english_stopwords:
+                    synonyms.add(l.name().lower())
     valid_words.update(synonyms)
+    click.echo("synonyms found")
     return valid_words
 
 
