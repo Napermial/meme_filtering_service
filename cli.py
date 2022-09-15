@@ -1,6 +1,9 @@
 import click
+import os
 
+from labeling.store_image_metadata import save_metadata_to_file
 from preprocessing.deduplicate_images import get_unique_phash_for_images_in_directory
+
 from processing.face_emotion_recognition import predict_emotion
 from processing.object_identification import load_image_for_object_detecton
 from processing.ocr_written_content import load_image_for_ocr
@@ -9,7 +12,11 @@ from processing.face_emotion_recognition import Emotic
 
 @click.command()
 @click.option("--input", help="Directory of memes")
-@click.option("--output", default="./", help="Where to store the metadata")
+@click.option(
+    "--output",
+    default=os.path.join(os.getcwd(), "metadata.json"),
+    help="Where to store the metadata",
+)
 @click.option(
     "--only-hashing", default=False, help="Only hashes, deduplicates the images"
 )
@@ -43,7 +50,7 @@ def meme_data_enricher(input, output, only_hashing, ocr, object_category, fer):
             tags.update(fer_labels)
             meta["fer"] = fer_labels
         meta["tags"] = tags
-    click.echo(meme_metadata)
+    save_metadata_to_file(output, meme_metadata)
 
 
 if __name__ == "__main__":
