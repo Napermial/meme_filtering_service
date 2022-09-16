@@ -1,9 +1,9 @@
 # Meme filtering tool
 
-This tool allows you to gather valuabe metadata from internet culture images. 
+This tool allows you to gather valuabe metadata from internet culture images.
 
 - Deduplication
-The images are deduplicated with a hashing algorythm (phash) which is used as a primary identificator in the metadata file. 
+The images are deduplicated with a hashing algorythm [imagehash/perceptual hashing](https://github.com/JohannesBuchner/imagehash) which is used as a primary identificator in the metadata file.
 - OCR
 First the text from the image is read with tesseract.  The image is prepared with transformations such as Gaussian adaptive tresholding and  
 - Object identification
@@ -19,15 +19,20 @@ You can use the cli after installing the dependencies from constraints.txt
 
 0. Download and install [tesseract](https://github.com/tesseract-ocr/tesseract#installing-tesseract)
 1. Create a virtual environment to avoid package collision and activate it
+
 ```bash
 python -m venv ./venv
 . venv/bin/activate
 ```
+
 2. install dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
-3. You can now run 
+
+3. You can now run
+
 ```bash
 meme-data-enricher input=path/to/directory/with/memes
 ```
@@ -40,3 +45,25 @@ meme-data-enricher input=path/to/directory/with/memes
 - "--ocr" ocr is run on image,  default=True, optional
 - "--object-category" Does object detection, image classification on the images, default=True, optional
 - "--fer", Does face emotion recognition of the images, default=True, optional
+
+## Metadata shape
+
+{
+    "perceptual_hash":
+    {
+        "path":"path/of/image",
+        "ocr": ["tag", "gathered", "during", "ocr"],
+        "object_detection" : ["tag", "gathered", "during", "object_detection/classification"],
+        "fer":["tags", "gathered", "during", "fer"],
+        "tags":["all", "tags", "deduplicated"]
+    }
+}
+
+## Key-value metadata shape
+
+{
+    "tag":
+    {
+        "images":["perceptual_hash", "perceptual_hash"]
+    }
+}
