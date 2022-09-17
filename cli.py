@@ -28,12 +28,14 @@ from processing.face_emotion_recognition import Emotic
 )
 @click.option("--fer", default=True, help="Does face emotion recognition of the images")
 def meme_data_enricher(input, output, only_hashing, ocr, object_category, fer):
+    if not input:
+        click.echo("Please provide an input directory")
     meme_metadata = get_unique_phash_for_images_in_directory(input)
     for phash, meta in list(meme_metadata.items()):
         click.echo(f"processing image with hash {phash}")
         tags = set()
         if only_hashing:
-            break
+            continue
         if ocr:
             click.echo("processing ocr")
             ocr_tags = load_image_for_ocr(meta["path"])
