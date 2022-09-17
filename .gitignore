@@ -7,3 +7,5 @@ processing/__pycache__
 preprocessing/__pycache__
 labeling/__pycache__
 metadata.json
+__pycache__
+*.json
