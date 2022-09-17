@@ -7,6 +7,7 @@ import numpy as np
 import cv2, pillowfight
 from PIL import Image
 import wordninja, click
+import os
 
 
 def ocr_vanilla_image(image, config) -> str:
@@ -52,13 +53,16 @@ def ocr_adaptive_gaussian_treshold_image(image, config) -> str:
     gaussian_image = cv2.adaptiveThreshold(
         grayscale_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 17, -15
     )
-    return pytesseract.image_to_string(gaussian_image, config=config)
+    _, gaussian_inverted = cv2.threshold(
+        gaussian_image, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU
+    )
+    return pytesseract.image_to_string(gaussian_inverted, config=config)
 
 
 def ocr_stroke_width_transformed_image(image, config) -> str:
     click.echo("running stroke width transformed ocr")
     stroke_width_transformed = pillowfight.swt(
-        Image.fromarray(image), output_type=pillowfight.SWT_OUTPUT_GRAYSCALE_TEXT
+        Image.fromarray(image), output_type=pillowfight.SWT_OUTPUT_BW_TEXT
     )
     return pytesseract.image_to_string(stroke_width_transformed, config=config)
 
@@ -102,9 +106,10 @@ def merge_solutions(texts: list):
 
 def load_image_for_ocr(path: str) -> set[str]:
     picture = cv2.imread(path)
-    pytesseract.pytesseract.tesseract_cmd = (
-        "C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
-    )
+    if os.name == "nt":
+        pytesseract.pytesseract.tesseract_cmd = (
+            "C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
+        )
     config = "--oem 3 --psm 11 -c tessedit_char_whitelist=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ "
     resuts = [
         ocr_vanilla_image(picture, config),

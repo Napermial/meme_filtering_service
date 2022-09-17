@@ -36,7 +36,8 @@ def detect_objects(image) -> set[str]:
     ):
         box = [round(i, 2) for i in box.tolist()]
         if score > 0.9:
-            labels.add(model.config.id2label[label.item()])
+            label_value = model.config.id2label[label.item()]
+            labels.update(label_value.replace(',', '').lower().split(' '))
     return labels
 
 
@@ -44,7 +45,7 @@ def load_image_for_object_detecton(path: str) -> set[str]:
     image = Image.open(path).convert("RGB")
     labels: set[str] = detect_objects(image)
     image = image.resize((224, 224))
-    labels.add(image_classification(image))
+    labels.update(image_classification(image).replace(',', '').lower().split(' '))
 
     return labels
 

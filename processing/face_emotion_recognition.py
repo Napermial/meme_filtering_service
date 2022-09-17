@@ -7,6 +7,7 @@ from os.path import join
 from PIL import Image
 from torchvision import transforms
 import numpy as np
+import os
 
 categories = [
     "Affection",
@@ -78,10 +79,17 @@ def download_dependencies(files: list[str]):
 
 
 def predict_emotion(path: str):
-    files = [
+    if os.name == 'nt':
+        files = [
         "models\\model_context1.pth",
         "models\\model_body1.pth",
         "models\\model_emotic1.pth",
+    ]
+    else:
+        files = [
+        "models/model_context1.pth",
+        "models/model_body1.pth",
+        "models/model_emotic1.pth",
     ]
 
     download_dependencies(files)
@@ -90,7 +98,7 @@ def predict_emotion(path: str):
         ind2cat[idx] = emotion
 
     transform = transforms.ToTensor()
-    input = transform(Image.open(path))
+    input = transform(Image.open(path).convert('RGB'))
     input = input.unsqueeze(0)
     emotic_model = Emotic(1, 1)
 

@@ -17,7 +17,7 @@ Faces and emotions are recovered from the image with the help of the [Emotic mod
 
 You can use the cli after installing the dependencies from constraints.txt
 
-0. Download and install [tesseract](https://github.com/tesseract-ocr/tesseract#installing-tesseract)
+0. Download and install [tesseract](https://github.com/tesseract-ocr/tesseract#installing-tesseract) with the English data packages -make sure it is on the path
 1. Create a virtual environment to avoid package collision and activate it
 ```bash
 python -m venv ./venv
