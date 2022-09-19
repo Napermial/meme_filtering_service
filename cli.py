@@ -1,5 +1,6 @@
 import click
 import os
+import uvicorn
 
 from labeling.store_image_metadata import save_metadata_to_file
 from preprocessing.deduplicate_images import get_unique_phash_for_images_in_directory
@@ -11,6 +12,7 @@ from processing.face_emotion_recognition import Emotic
 
 
 @click.command()
+@click.option("--serve", default=False, help="run service")
 @click.option("--input", help="Directory of memes")
 @click.option(
     "--output",
@@ -27,13 +29,20 @@ from processing.face_emotion_recognition import Emotic
     help="Does object detection, image classification on the images",
 )
 @click.option("--fer", default=True, help="Does face emotion recognition of the images")
-def meme_data_enricher(input, output, only_hashing, ocr, object_category, fer):
+def meme_data_enricher(serve, input, output, only_hashing, ocr, object_category, fer):
+    if serve and input:
+        os.environ["DB_PATH"] = input
+        uvicorn.run("main:app", port=5000, log_level="info")
+        return
+    if not input:
+        click.echo("Please provide an input directory")
+        return
     meme_metadata = get_unique_phash_for_images_in_directory(input)
     for phash, meta in list(meme_metadata.items()):
         click.echo(f"processing image with hash {phash}")
         tags = set()
         if only_hashing:
-            break
+            continue
         if ocr:
             click.echo("processing ocr")
             ocr_tags = load_image_for_ocr(meta["path"])
