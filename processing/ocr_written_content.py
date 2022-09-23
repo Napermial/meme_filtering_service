@@ -6,7 +6,8 @@ import pytesseract
 import numpy as np
 import cv2, pillowfight
 from PIL import Image
-import wordninja, click
+import click
+import enchant
 import os
 
 
@@ -67,6 +68,21 @@ def ocr_stroke_width_transformed_image(image, config) -> str:
     return pytesseract.image_to_string(stroke_width_transformed, config=config)
 
 
+def _split_long_string(long: str, dictionary) -> list[str]:
+    length = len(long)
+    words = set()
+    longest = 0
+    for i in range(0, length - 2):
+        if i < longest:
+            continue
+        for j in range(length, i + 1, -1):
+            if dictionary.check(long[i:j]):
+                words.add(long[i:j])
+                longest = j
+                break
+    return words
+
+
 def merge_solutions(texts: list):
     nltk.download("stopwords", quiet=True)
     nltk.download("wordnet", quiet=True)
@@ -76,8 +92,8 @@ def merge_solutions(texts: list):
     for text in texts:
         possibles.append(text.replace("\n", " "))
     valid_words = set()
-
     english_stopwords = set(stopwords.words("english"))
+    dictionary = enchant.Dict("en_US")
     for text in possibles:
         for word in text.split(" "):
             word = word.lower()
@@ -85,12 +101,16 @@ def merge_solutions(texts: list):
                 valid_words.update(
                     [
                         word
-                        for word in wordninja.split(word)
+                        for word in _split_long_string(word, dictionary)
                         if len(word) > 2 and word.lower() not in english_stopwords
                     ]
                 )
                 continue
-            if len(word) > 2 and word not in english_stopwords:
+            if (
+                len(word) > 2
+                and word not in english_stopwords
+                and dictionary.check(word)
+            ):
                 valid_words.add(word)
     click.echo("wordninja finished")
     synonyms = set()
@@ -111,13 +131,16 @@ def load_image_for_ocr(path: str) -> set[str]:
             "C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
         )
     config = "--oem 3 --psm 11 -c tessedit_char_whitelist=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ "
-    resuts = [
-        ocr_vanilla_image(picture, config),
-        ocr_inverted_colour_image(picture, config),
-        ocr_grayscale_image_with_otsu(picture, config),
-        ocr_adaptive_gaussian_treshold_image(picture, config),
-        ocr_stroke_width_transformed_image(picture, config),
-    ]
+    try:
+        resuts = [
+            ocr_vanilla_image(picture, config),
+            ocr_inverted_colour_image(picture, config),
+            ocr_grayscale_image_with_otsu(picture, config),
+            ocr_adaptive_gaussian_treshold_image(picture, config),
+            ocr_stroke_width_transformed_image(picture, config),
+        ]
+    except TypeError:
+        return set()
     return merge_solutions(resuts)
 
 
