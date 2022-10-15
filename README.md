@@ -47,7 +47,7 @@ meme-data-enricher input=path/to/directory/with/memes
 - "--fer", Does face emotion recognition of the images, default=True, optional
 
 ## Metadata shape
-
+```JSON
 {
     "perceptual_hash":
     {
@@ -58,12 +58,16 @@ meme-data-enricher input=path/to/directory/with/memes
         "tags":["all", "tags", "deduplicated"]
     }
 }
-
+```
 ## Key-value metadata shape
-
+```JSON
 {
     "tag":
     {
         "images":["perceptual_hash", "perceptual_hash"]
     }
 }
+```
+
+Future plans:
+collect [famous people](https://medialab.github.io/bhht-datascape/) and incorporate a [face recognition algorythm](https://github.com/shobhit9618/celeb_recognition)
